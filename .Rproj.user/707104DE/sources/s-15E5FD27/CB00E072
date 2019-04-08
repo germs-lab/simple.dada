@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1554735584472.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CB00E072",
+    "lastKnownWriteTime" : 1554386284,
+    "last_content_update" : 1554386284,
+    "path" : "~/Dropbox/repos/simple_dada/R/read_quality_report.R",
+    "project_path" : "R/read_quality_report.R",
+    "properties" : {
+        "cursorPosition" : "69,0",
+        "scrollLine" : "54"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

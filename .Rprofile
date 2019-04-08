@@ -1,0 +1,5 @@
+require(devtools)
+require(dada2)
+require(data.table)
+require(rmarkdown)
+require(simple.dada)

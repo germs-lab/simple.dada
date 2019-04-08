@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1554734228760.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "1F75B478",
+    "lastKnownWriteTime" : 1554755485,
+    "last_content_update" : 1554755485307,
+    "path" : "~/Dropbox/repos/simple_dada/R/simple_dada.R",
+    "project_path" : "R/simple_dada.R",
+    "properties" : {
+        "cursorPosition" : "139,118",
+        "scrollLine" : "118",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

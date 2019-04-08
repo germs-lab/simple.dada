@@ -1,0 +1,47 @@
+library(dada2);library(data.table)
+set.seed(1390)
+CORES = parallel::detectCores()
+path <- "/mnt/home/smithsch/projects/soil_column"
+maximum_read_length = 260
+
+fnFs <- sort(list.files(paste0(path, "/unassembled"), pattern="_R1_", full.names = TRUE))
+fnRs <- sort(list.files(paste0(path, "/unassembled"), pattern="_R2_", full.names = TRUE))
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+number_samples <- length(sample.names)
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+
+#trunclen is the number of bps to trim the R1 and R2 reads to.. typically based on the read quality report
+out <- filterAndTrim(fwd = fnFs, filt = filtFs, rev = fnRs, filt.rev = filtRs, truncLen=c(240,240), maxLen = maximum_read_length, truncQ=2, maxEE=c(2,2), maxN=0, rm.phix=TRUE, compress=TRUE, multithread=CORES) # On Windows set multithread=FALSE
+
+dir.create(file.path(path, 'dada2'), showWarnings = FALSE)
+derepFs <- derepFastq(filtFs, verbose=FALSE);names(derepFs) <- sample.names;saveRDS(derepFs, file.path(path, 'dada2/derepFs.RDS'))
+derepRs <- derepFastq(filtRs, verbose=FALSE);names(derepRs) <- sample.names;saveRDS(derepRs, file.path(path, 'dada2/derepRs.RDS'))
+
+errF <- learnErrors(filtFs, multithread=CORES, randomize = TRUE);saveRDS(errF, file.path(path, 'dada2/errF.RDS'))
+errR <- learnErrors(filtRs, multithread=CORES, randomize = TRUE);saveRDS(errR, file.path(path, 'dada2/errR.RDS'))
+
+dadaFs <- vector("list", length(sample.names));names(dadaFs) <- sample.names
+dadaRs <- vector("list", length(sample.names));names(dadaRs) <- sample.names
+for(sam in sample.names) {
+  cat("Processing:", sam, "\n")
+  derep <- derepFs[[sam]]
+  dadaFs[[sam]] <- dada(derep, err=errF, multithread=CORES)
+  derep <- derepRs[[sam]]
+  dadaRs[[sam]] <- dada(derep, err=errR, multithread=CORES)
+}
+saveRDS(dadaFs, file.path(path, 'dada2/dadaFs.RDS'))
+saveRDS(dadaRs, file.path(path, 'dada2/dadaRs.RDS'))
+
+merged_reads <- mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose=FALSE);saveRDS(merged_reads, file.path(path, 'dada2/merged_reads.RDS'))
+
+seq_table <- makeSequenceTable(merged_reads)
+seq_table <- removeBimeraDenovo(seq_table, method="consensus", multithread = CORES)
+saveRDS(t(seq_table), paste0(path,"seq_table.RDS"))
+
+tax_table <- assignTaxonomy(seq_table, "/mnt/research/germs/databases/dada2/rdp_train_set_16.fa.gz", multithread = CORES)
+saveRDS(tax_table, paste0(path,"tax_table.RDS"))
+
+

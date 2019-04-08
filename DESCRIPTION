@@ -1,0 +1,31 @@
+Package: simple.dada
+Title: Runs a simplified DADA2 routine.
+Version: 0.99.0
+Author: Schuyler Smith <sdsmith@iastate.edu>
+Maintainer: Schuyler Smith <sdsmith@iastate.edu>
+Description: Runs through the DADA2 routine with dynamic 
+    paramter assignment. In situations where the data is clean 
+    this will work well. If the data is not clean, it will be better
+    to either run the DADA2 routine. or each sub-function.
+Depends:
+    R (>= 3.2)
+Imports:
+	  utils,
+	  stringr,
+	  grDevices,
+	  parallel,
+	  dada2,
+	  doParallel
+Remotes: 
+    benjjneb/dada2
+LinkingTo: 
+Suggests:
+    knitr,
+    devtools,
+    rmarkdown
+SystemRequirements:
+VignetteBuilder: knitr
+License: GPL-3
+Encoding: UTF-8
+LazyData: false
+RoxygenNote: 6.1.1
