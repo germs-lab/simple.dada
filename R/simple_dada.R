@@ -12,6 +12,7 @@
 #' @param paired Whether or not the program should look
 #' for forward (R1) and reverse (R2) fastq files.
 #' @param cores The number of CPU cores/threads to use.
+#' @import dada2
 #' @import data.table
 #' @import doParallel
 #' @import parallel
@@ -19,7 +20,7 @@
 #' @return data.table
 
 simple_dada <- function(path, paired = TRUE, cores = 0){
-  if(cores != 1){require(doParallel)}
+  if(cores != 1){requireNamespace(doParallel)}
   if(cores == 0){cores <- detectCores()-1}
   if(paired){
     forward_files <- sort(list.files(file.path(path, 'raw_reads'), pattern = "_R1_001.fastq", full.names = TRUE))

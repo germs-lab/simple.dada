@@ -1,3 +1,9 @@
+^\.travis\.yml$
+^Meta$
+^doc$
+^docs$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 .travis.yml
+.Rprofile
+^vignette_site$

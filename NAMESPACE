@@ -2,6 +2,9 @@
 
 export(read_quality_report)
 export(simple_dada)
+import(dada2)
 import(data.table)
 import(doParallel)
 import(parallel)
+importFrom(ShortRead,qa)
+importFrom(stats,median)

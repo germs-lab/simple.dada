@@ -3,27 +3,30 @@
 #' Processes fastq files to look at read counts, read lengths,
 #' and at what read cycle the quality drops below the \code{q}
 #' quality threshold.
-#' @usage read_quality_report(path, q, n, k)
+#' @usage read_quality_report(path, q = 25, k = 2, n = 5e+05, cores = 1)
 #' @param path File path(s) to fastq or fastq.gz file(s).
 #' @param q Quality score cutoff for the read. Will look at the mean average score for 
 #' \code{k} bases beyond where the potential read length cutoff would be recommended.
 #' @param k number of bases beyond the current to consider for quality cutoff.
 #' @param n The number of records to sample from the fastq file.
 #' @param cores The number of CPU cores/threads to use.
+#' @import dada2
 #' @import data.table
 #' @import doParallel
 #' @import parallel
+#' @importFrom ShortRead qa
+#' @importFrom stats median
 #' @export
 #' @return data.table
 
 read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
-  if(cores != 1){require(doParallel)}
+  if(cores != 1){requireNamespace(doParallel)}
   if(cores == 0){cores <- detectCores()-1}
   if(cores == 1){
     read_report <- data.table(file = character(), sample = character(), count = numeric(), 
                               length = numeric(), quality_length = numeric())
     for(file in path[!is.na(path)]){
-      srqa <- ShortRead::qa(file, n = n)
+      srqa <- qa(file, n = n)
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
       averages <- as.vector(by(df, df$Cycle, function(cycle){

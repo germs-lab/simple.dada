@@ -4,7 +4,7 @@
 \alias{read_quality_report}
 \title{read_quality_report}
 \usage{
-read_quality_report(path, q, n, k)
+read_quality_report(path, q = 25, k = 2, n = 5e+05, cores = 1)
 }
 \arguments{
 \item{path}{File path(s) to fastq or fastq.gz file(s).}
