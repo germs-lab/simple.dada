@@ -8,14 +8,14 @@ Description: Runs through the DADA2 routine with dynamic
     this will work well. If the data is not clean, it will be better
     to either run the DADA2 routine. or each sub-function.
 Depends:
-    R (>= 3.2)
+    R (>= 3.2),
+    dada2
 Imports:
 	  utils,
 	  stringr,
 	  grDevices,
 	  data.table,
 	  parallel,
-	  dada2,
 	  doParallel
 Remotes: 
     benjjneb/dada2
