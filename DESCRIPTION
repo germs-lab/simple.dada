@@ -1,5 +1,5 @@
 Package: simple.dada
-Title: Runs a simplified DADA2 routine.
+Title: Runs a simplified DADA2 routine
 Version: 0.99.0
 Author: Schuyler Smith <sdsmith@iastate.edu>
 Maintainer: Schuyler Smith <sdsmith@iastate.edu>
@@ -13,6 +13,7 @@ Imports:
 	  utils,
 	  stringr,
 	  grDevices,
+	  data.table,
 	  parallel,
 	  dada2,
 	  doParallel
