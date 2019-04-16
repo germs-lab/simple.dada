@@ -2,13 +2,13 @@
 [![Travis Build
 Status](https://travis-ci.org/schuyler-smith/simple.dada.svg?branch=master)](https://github.com/schuyler-smith/simple.dada)
 
-A compilation of various R functions that I like.
+A simple wrapper function for the dada2 pipeline.
 
 ## Installation
 
 ```
 library(devtools)
-install_github('schuyler-smith/schuylR')
+install_github('schuyler-smith/simple.dada')
 library(schuylR)
 ```
 
