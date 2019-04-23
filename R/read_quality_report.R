@@ -20,7 +20,7 @@
 #' @return data.table
 
 read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
-  if(cores != 1){requireNamespace(doParallel)}
+  if(cores != 1){requireNamespace('doParallel')}
   if(cores == 0){cores <- detectCores()-1}
   if(cores == 1){
     read_report <- data.table(file = character(), sample = character(), count = numeric(), 
