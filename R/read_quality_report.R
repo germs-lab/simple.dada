@@ -65,7 +65,7 @@ read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
           break
         }
       }
-      return(data.table(file = file, sample = strsplit(basename(file), "_")[[1]][1], count = read_counts, length = length(averages), quality_length = q_length))
+      return(data.table(file = file, sample = strsplit(basename(file), "_L001")[[1]][1], count = read_counts, length = length(averages), quality_length = q_length))
     }  
   }
   return(read_report)
