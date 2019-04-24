@@ -51,8 +51,8 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
       }
       stopCluster(cl)
     }
-    filtered_f <- sort(list.files(file.path(path, 'filtered'), pattern = "_F_", full.names = TRUE))
-    filtered_r <- sort(list.files(file.path(path, 'filtered'), pattern = "_R_", full.names = TRUE))
+    filtered_f <- sort(list.files(file.path(path, 'filtered'), pattern = "_F_filtered", full.names = TRUE))
+    filtered_r <- sort(list.files(file.path(path, 'filtered'), pattern = "_R_filtered", full.names = TRUE))
     errF <- learnErrors(filtered_f, randomize = TRUE, multithread = cores)
     errR <- learnErrors(filtered_r, randomize = TRUE, multithread = cores)
     
