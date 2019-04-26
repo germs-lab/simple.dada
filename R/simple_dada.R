@@ -56,7 +56,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     errF <- learnErrors(filtered_f, randomize = TRUE, multithread = cores)
     errR <- learnErrors(filtered_r, randomize = TRUE, multithread = cores)
     
-    sample_ids <- sapply(strsplit(basename(filtered_f), "_"), `[`, 1)
+    sample_ids <- sapply(strsplit(basename(filtered_f), "_F_filtered"), `[`, 1)
     dadas <- vector("list", length(sample_ids))
     names(dadas) <- sample_ids
     if(cores == 1){
