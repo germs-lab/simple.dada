@@ -112,7 +112,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     filtered <- sort(list.files(file.path(path, 'filtered'), pattern = "filtered.fastq", full.names = TRUE))
     err <- learnErrors(filtered, randomize = TRUE, multithread = cores)
     
-    sample_ids <- sapply(strsplit(basename(filtered), "_"), `[`, 1)
+    sample_ids <- sapply(strsplit(basename(filtered), "_filtered"), `[`, 1)
     dadas <- vector("list", length(sample_ids))
     names(dadas) <- sample_ids
     if(cores == 1){
