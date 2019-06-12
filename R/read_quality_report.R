@@ -3,7 +3,7 @@
 #' Processes fastq files to look at read counts, read lengths,
 #' and at what read cycle the quality drops below the \code{q}
 #' quality threshold.
-#' @usage read_quality_report(path, q = 25, k = 2, n = 5e+05, cores = 1)
+#' @usage read_quality_report(path, q = 20, k = 3, n = 5e+06, cores = 1)
 #' @param path File path(s) to fastq or fastq.gz file(s).
 #' @param q Quality score cutoff for the read. Will look at the mean average score for 
 #' \code{k} bases beyond where the potential read length cutoff would be recommended.
@@ -19,7 +19,7 @@
 #' @export
 #' @return data.table
 
-read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
+read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
   if(cores != 1){requireNamespace('doParallel')}
   if(cores == 0){cores <- detectCores()-1}
   if(cores == 1){
@@ -29,14 +29,17 @@ read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
       srqa <- qa(file, n = n)
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
+      lengths <- as.vector(by(df, df$Cycle, function(cycle){
+        sum(cycle$Count)
+      }, simplify = TRUE))
       averages <- as.vector(by(df, df$Cycle, function(cycle){
         cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
-      }, simplify = TRUE))
+      }, simplify = TRUE))[which(lengths/read_counts > .10)]
       # averages <- rowsum(df$Score * df$Count, df$Cycle)/
       # rowsum(df$Count, df$Cycle)
       q_length <- length(averages)
-      for(cycle in seq_along(averages)){
-        if(mean(averages[cycle:(cycle+(k))], na.rm = T) < q){
+      for(cycle in seq_along(averages)-1){
+        if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
           q_length <- cycle
           break
         }
@@ -53,14 +56,17 @@ read_quality_report <- function(path, q = 25, k = 2, n = 5e+05, cores = 1){
       srqa <- ShortRead::qa(file, n = n)
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
+      lengths <- as.vector(by(df, df$Cycle, function(cycle){
+        sum(cycle$Count)
+      }, simplify = TRUE))[which(lengths/read_counts > .10)]
       averages <- as.vector(by(df, df$Cycle, function(cycle){
         cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
       }, simplify = TRUE))
       # averages <- rowsum(df$Score * df$Count, df$Cycle)/
       # rowsum(df$Count, df$Cycle)
       q_length <- length(averages)
-      for(cycle in seq_along(averages)){
-        if(mean(averages[cycle:(cycle+(k))], na.rm = T) < q){
+      for(cycle in seq_along(averages)-1){
+        if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
           q_length <- cycle
           break
         }
