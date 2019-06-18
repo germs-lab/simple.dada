@@ -89,7 +89,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     reads <- read_quality_report(files, cores = 0)
     reads <- reads[count > 0.1*median(count)]
     if(cores == 1){
-      out <- for(i in seq_along(fwd$sample)){
+      out <- for(i in seq_along(reads$sample)){
         filtered <- file.path(path, "filtered", paste0(reads[i, 'sample'], "_filtered.fastq.gz"))
         filterAndTrim(reads[['file']][i], filtered,
                       truncLen = c(reads[['quality_length']][i]),
@@ -108,7 +108,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
       }
       stopCluster(cl)
     }
-
+    
     filtered <- sort(list.files(file.path(path, 'filtered'), pattern = "filtered.fastq", full.names = TRUE))
     err <- learnErrors(filtered, randomize = TRUE, multithread = cores)
     
@@ -131,15 +131,14 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     }
   }
   
-  dir.create(file.path(path, 'dada2'), showWarnings = FALSE)
   seq_table <- makeSequenceTable(dadas)
   rownames(seq_table) <- sample_ids
-  saveRDS(t(seq_table), file.path(path, 'dada2', 'seq_table.RDS'))
+  saveRDS(t(seq_table), file.path(path, 'seq_table.RDS'))
   seq_table <- removeBimeraDenovo(seq_table, method = "consensus", multithread = TRUE)
   rownames(seq_table) <- sample_ids
-  saveRDS(t(seq_table), file.path(path, 'dada2', 'seq_table.RDS'))
+  saveRDS(t(seq_table), file.path(path, 'seq_table.RDS'))
   tax_table <- assignTaxonomy(seq_table, system.file("extdata", "silva_nr_v132_train_set.fa.gz", package = "simple.dada"), multithread = TRUE)
-  saveRDS(tax_table, file.path(path, 'dada2', 'tax_table.RDS'))
+  saveRDS(tax_table, file.path(path, 'tax_table.RDS'))
 }
 
 
