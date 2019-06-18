@@ -99,7 +99,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     } else {
       cl <- makeCluster(cores, type = "FORK")  
       registerDoParallel(cl)
-      out <- foreach(i = seq_along(fwd$sample)) %dopar% {
+      out <- foreach(i = seq_along(reads$sample)) %dopar% {
         filtered_f <- file.path(path, "filtered", paste0(reads[i, 'sample'], "_filtered.fastq.gz"))
         filterAndTrim(reads[['file']][i], filtered,
                       truncLen=c(reads[['quality_length']][i]),
