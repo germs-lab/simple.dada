@@ -24,8 +24,8 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
   if(paired){
     forward_files <- sort(list.files(file.path(path), pattern = "_R1_001.fastq", full.names = TRUE))
     reverse_files <- sort(list.files(file.path(path), pattern = "_R2_001.fastq", full.names = TRUE))
-    fwd <- read_quality_report(forward_files, cores = 0)
-    rev <- read_quality_report(reverse_files, cores = 0)
+    fwd <- read_quality_report(forward_files, cores = cores)
+    rev <- read_quality_report(reverse_files, cores = cores)
     fwd <- fwd[count > 0.1*median(count)]
     rev <- rev[count > 0.1*median(count)]
     if(cores == 1){
