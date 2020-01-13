@@ -10,14 +10,14 @@ Description: Runs through the DADA2 routine with dynamic
 biocViews:
 Depends:
     R (>= 3.2),
-    dada2
+    dada2,
+	  doParallel,
 Imports:
 	  utils,
 	  stringr,
 	  grDevices,
 	  data.table,
-	  parallel,
-	  doParallel,
+    parallel,
 	  ShortRead
 Remotes: 
     benjjneb/dada2

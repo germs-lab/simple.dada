@@ -7,8 +7,7 @@
 #' sub-function.
 #' 
 #' @usage simple_dada(path, paired = TRUE, cores = 0)
-#' @param path Directory for project. Raw reads should be 
-#' contained in a sub-folder named raw_reads
+#' @param path Directory containing raw fastq files.
 #' @param paired Whether or not the program should look
 #' for forward (R1) and reverse (R2) fastq files.
 #' @param cores The number of CPU cores/threads to use.
@@ -23,16 +22,16 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
   if(cores != 1){requireNamespace('doParallel')}
   if(cores == 0){cores <- detectCores()-1}
   if(paired){
-    forward_files <- sort(list.files(file.path(path, 'raw_reads'), pattern = "_R1_001.fastq", full.names = TRUE))
-    reverse_files <- sort(list.files(file.path(path, 'raw_reads'), pattern = "_R2_001.fastq", full.names = TRUE))
+    forward_files <- sort(list.files(file.path(path), pattern = "_R1_001.fastq", full.names = TRUE))
+    reverse_files <- sort(list.files(file.path(path), pattern = "_R2_001.fastq", full.names = TRUE))
     fwd <- read_quality_report(forward_files, cores = 0)
     rev <- read_quality_report(reverse_files, cores = 0)
     fwd <- fwd[count > 0.1*median(count)]
     rev <- rev[count > 0.1*median(count)]
     if(cores == 1){
       out <- for(i in seq_along(fwd$sample)){
-        filtered_f <- file.path(path, "filtered", paste0(fwd[i, 'sample'], "_F_filtered.fastq.gz"))
-        filtered_r <- file.path(path, "filtered", paste0(rev[i, 'sample'], "_R_filtered.fastq.gz"))
+        filtered_f <- file.path(path, "filtered", paste0(fwd[i, 'sample'], "_F.filtered.fastq.gz"))
+        filtered_r <- file.path(path, "filtered", paste0(rev[i, 'sample'], "_R.filtered.fastq.gz"))
         filterAndTrim(fwd[['file']][i], filtered_f, rev[['file']][i], filtered_r,
                       truncLen=c(fwd[['quality_length']][i], rev[['quality_length']][i]),
                       maxN = 0, maxEE = c(2,2), truncQ = 2, rm.phix = TRUE,
@@ -42,8 +41,8 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
       cl <- makeCluster(cores, type="FORK")  
       registerDoParallel(cl)
       out <- foreach(i = seq_along(fwd$sample)) %dopar% {
-        filtered_f <- file.path(path, "filtered", paste0(fwd[i, 'sample'], "_F_filtered.fastq.gz"))
-        filtered_r <- file.path(path, "filtered", paste0(rev[i, 'sample'], "_R_filtered.fastq.gz"))
+        filtered_f <- file.path(path, "filtered", paste0(fwd[i, 'sample'], "_F.filtered.fastq.gz"))
+        filtered_r <- file.path(path, "filtered", paste0(rev[i, 'sample'], "_R.filtered.fastq.gz"))
         filterAndTrim(fwd[['file']][i], filtered_f, rev[['file']][i], filtered_r,
                       truncLen = c(fwd[['quality_length']][i], rev[['quality_length']][i]),
                       maxN = 0, maxEE = c(2,2), truncQ = 2, rm.phix = TRUE,
@@ -51,12 +50,12 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
       }
       stopCluster(cl)
     }
-    filtered_f <- sort(list.files(file.path(path, 'filtered'), pattern = "_F_filtered", full.names = TRUE))
-    filtered_r <- sort(list.files(file.path(path, 'filtered'), pattern = "_R_filtered", full.names = TRUE))
+    filtered_f <- sort(list.files(file.path(path, 'filtered'), pattern = "_F.filtered", full.names = TRUE))
+    filtered_r <- sort(list.files(file.path(path, 'filtered'), pattern = "_R.filtered", full.names = TRUE))
     errF <- learnErrors(filtered_f, randomize = TRUE, multithread = cores)
     errR <- learnErrors(filtered_r, randomize = TRUE, multithread = cores)
     
-    sample_ids <- sapply(strsplit(basename(filtered_f), "_F_filtered"), `[`, 1)
+    sample_ids <- sapply(strsplit(basename(filtered_f), "_F.filtered"), `[`, 1)
     dadas <- vector("list", length(sample_ids))
     names(dadas) <- sample_ids
     if(cores == 1){
@@ -85,12 +84,12 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
   }
   
   if(!paired){
-    files <- sort(list.files(file.path(path, 'raw_reads'), pattern = ".fastq", full.names = TRUE))
-    reads <- read_quality_report(files, cores = 0)
+    files <- sort(list.files(file.path(path), pattern = ".fastq", full.names = TRUE))
+    reads <- read_quality_report(files, cores = cores)
     reads <- reads[count > 0.1*median(count)]
     if(cores == 1){
       out <- for(i in seq_along(reads$sample)){
-        filtered <- file.path(path, "filtered", paste0(reads[i, 'sample'], "_filtered.fastq.gz"))
+        filtered <- file.path(path, "filtered", paste0(reads[i, 'sample'], ".filtered.fastq.gz"))
         filterAndTrim(reads[['file']][i], filtered,
                       truncLen = c(reads[['quality_length']][i]),
                       maxN = 0, maxEE = c(2), truncQ = 2, rm.phix = TRUE,
@@ -100,7 +99,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
       cl <- makeCluster(cores, type = "FORK")  
       registerDoParallel(cl)
       out <- foreach(i = seq_along(reads$sample)) %dopar% {
-        filtered_f <- file.path(path, "filtered", paste0(reads[i, 'sample'], "_filtered.fastq.gz"))
+        filtered <- file.path(path, "filtered", paste0(reads[i, 'sample'], ".filtered.fastq.gz"))
         filterAndTrim(reads[['file']][i], filtered,
                       truncLen=c(reads[['quality_length']][i]),
                       maxN = 0, maxEE = c(2), truncQ = 2, rm.phix = TRUE,
@@ -112,7 +111,7 @@ simple_dada <- function(path, paired = TRUE, cores = 0){
     filtered <- sort(list.files(file.path(path, 'filtered'), pattern = "filtered.fastq", full.names = TRUE))
     err <- learnErrors(filtered, randomize = TRUE, multithread = cores)
     
-    sample_ids <- sapply(strsplit(basename(filtered), "_filtered"), `[`, 1)
+    sample_ids <- sapply(strsplit(basename(filtered), ".filtered"), `[`, 1)
     dadas <- vector("list", length(sample_ids))
     names(dadas) <- sample_ids
     if(cores == 1){

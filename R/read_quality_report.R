@@ -22,10 +22,20 @@
 read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
   if(cores != 1){requireNamespace('doParallel')}
   if(cores == 0){cores <- detectCores()-1}
+  
+  if(length(path) == 1 && dir.exists(path)){ 
+    path <- gsub('/$','',path)
+    files <- vector()
+    for(extension in c(".fastq.gz$", ".fastq.bz2$", ".fastq$")){
+      files <- append(files, dir(path, extension, full.names = TRUE))
+    }
+  } else {files <- path}
+  files <- normalizePath(files)
+  
   if(cores == 1){
     read_report <- data.table(file = character(), sample = character(), count = numeric(), 
                               length = numeric(), quality_length = numeric())
-    for(file in path[!is.na(path)]){
+    for(file in files){
       srqa <- qa(file, n = n)
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
@@ -44,15 +54,15 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
           break
         }
       }
-      read_report <- rbind(read_report, list(file, strsplit(basename(file), "_")[[1]][1], read_counts, 
+      read_report <- rbind(read_report, list(file, gsub('\\..*','',basename(file)), read_counts, 
                                              length(averages), q_length))
     }
   } else {
     cl <- makeCluster(cores, type="FORK")  
     registerDoParallel(cl)
     on.exit(stopCluster(cl))
-    read_report <- foreach(i = seq_along(path[!is.na(path)]), .combine = 'rbind') %dopar% {
-      file = path[i]
+    read_report <- foreach(i = seq_along(files), .combine = 'rbind') %dopar% {
+      file = files[i]
       srqa <- ShortRead::qa(file, n = n)
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
@@ -71,7 +81,7 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
           break
         }
       }
-      return(data.table(file = file, sample = strsplit(basename(file), "_L001")[[1]][1], count = read_counts, length = length(averages), quality_length = q_length))
+      return(data.table(file = file, sample = gsub('\\..*','',basename(file)), count = read_counts, length = length(averages), quality_length = q_length))
     }  
   }
   return(read_report)
