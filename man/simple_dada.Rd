@@ -7,8 +7,7 @@
 simple_dada(path, paired = TRUE, cores = 0)
 }
 \arguments{
-\item{path}{Directory for project. Raw reads should be 
-contained in a sub-folder named raw_reads}
+\item{path}{Directory containing raw fastq files.}
 
 \item{paired}{Whether or not the program should look
 for forward (R1) and reverse (R2) fastq files.}
