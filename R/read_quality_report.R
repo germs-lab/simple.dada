@@ -68,7 +68,8 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
       read_counts <- sum(srqa[["readCounts"]]$read)
       lengths <- as.vector(by(df, df$Cycle, function(cycle){
         sum(cycle$Count)
-      }, simplify = TRUE))[which(lengths/read_counts > .10)]
+      }, simplify = TRUE))
+      lengths <- lengths[which(lengths/read_counts > .10)]
       averages <- as.vector(by(df, df$Cycle, function(cycle){
         cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
       }, simplify = TRUE))
