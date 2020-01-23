@@ -37,31 +37,31 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
                               length = numeric(), quality_length = numeric())
     for(file in files){
       srqa <- tryCatch(
-        {qa(file, n = n)},
+        {qa(file, n = n)
+          df <- srqa[["perCycle"]]$quality
+          read_counts <- sum(srqa[["readCounts"]]$read)
+          lengths <- as.vector(by(df, df$Cycle, function(cycle){
+            sum(cycle$Count)
+          }, simplify = TRUE))
+          averages <- as.vector(by(df, df$Cycle, function(cycle){
+            cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
+          }, simplify = TRUE))[which(lengths/read_counts > .10)]
+          # averages <- rowsum(df$Score * df$Count, df$Cycle)/
+          # rowsum(df$Count, df$Cycle)
+          q_length <- length(averages)
+          for(cycle in seq_along(averages)-1){
+            if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
+              q_length <- cycle
+              break
+            }
+          }
+          read_report <- rbind(read_report, list(file, gsub('\\..*','',basename(file)), read_counts, 
+                                                 length(averages), q_length))
+        },
         error = function(e){
           read_report <- rbind(read_report, 
                                list(file, gsub('\\..*','',basename(file)), 0, 0, 0))
-          next
         })
-      df <- srqa[["perCycle"]]$quality
-      read_counts <- sum(srqa[["readCounts"]]$read)
-      lengths <- as.vector(by(df, df$Cycle, function(cycle){
-        sum(cycle$Count)
-      }, simplify = TRUE))
-      averages <- as.vector(by(df, df$Cycle, function(cycle){
-        cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
-      }, simplify = TRUE))[which(lengths/read_counts > .10)]
-      # averages <- rowsum(df$Score * df$Count, df$Cycle)/
-      # rowsum(df$Count, df$Cycle)
-      q_length <- length(averages)
-      for(cycle in seq_along(averages)-1){
-        if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
-          q_length <- cycle
-          break
-        }
-      }
-      read_report <- rbind(read_report, list(file, gsub('\\..*','',basename(file)), read_counts, 
-                                             length(averages), q_length))
     }
   } else {
     cl <- makeCluster(cores, type="FORK")  
@@ -70,31 +70,31 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
     read_report <- foreach(i = seq_along(files), .combine = 'rbind') %dopar% {
       file = files[i]
       srqa <- tryCatch(
-        {ShortRead::qa(file, n = n)},
+        {ShortRead::qa(file, n = n)
+          df <- srqa[["perCycle"]]$quality
+          read_counts <- sum(srqa[["readCounts"]]$read)
+          lengths <- as.vector(by(df, df$Cycle, function(cycle){
+            sum(cycle$Count)
+          }, simplify = TRUE))
+          lengths <- lengths[which(lengths/read_counts > .10)]
+          averages <- as.vector(by(df, df$Cycle, function(cycle){
+            cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
+          }, simplify = TRUE))
+          # averages <- rowsum(df$Score * df$Count, df$Cycle)/
+          # rowsum(df$Count, df$Cycle)
+          q_length <- length(averages)
+          for(cycle in seq_along(averages)-1){
+            if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
+              q_length <- cycle
+              break
+            }
+          }
+          return(data.table(file = file, sample = gsub('\\..*','',basename(file)), count = read_counts, length = length(averages), quality_length = q_length))
+        },
         error = function(e){
           return(data.table(file = file, sample = gsub('\\..*','',basename(file)), count = 0, length = 0, quality_length = 0))
-          next
         })
-      df <- srqa[["perCycle"]]$quality
-      read_counts <- sum(srqa[["readCounts"]]$read)
-      lengths <- as.vector(by(df, df$Cycle, function(cycle){
-        sum(cycle$Count)
-      }, simplify = TRUE))
-      lengths <- lengths[which(lengths/read_counts > .10)]
-      averages <- as.vector(by(df, df$Cycle, function(cycle){
-        cycle$Score[min(which(cumsum(cycle$Score) >= sum(cycle$Score)/2))]
-      }, simplify = TRUE))
-      # averages <- rowsum(df$Score * df$Count, df$Cycle)/
-      # rowsum(df$Count, df$Cycle)
-      q_length <- length(averages)
-      for(cycle in seq_along(averages)-1){
-        if(mean(averages[(cycle+1):(cycle+(k-1))], na.rm = T) < q){
-          q_length <- cycle
-          break
-        }
-      }
-      return(data.table(file = file, sample = gsub('\\..*','',basename(file)), count = read_counts, length = length(averages), quality_length = q_length))
-    }  
+}  
   }
   return(read_report)
 }
