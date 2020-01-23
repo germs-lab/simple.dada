@@ -8,18 +8,3 @@ warnings_are_errors: false
 os:
   - linux
   - osx
-compiler:
-  - gcc
-  - clang
-env:
-  global:
-  - R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
-  # don't treat missing suggested packages as error
-  - _R_CHECK_FORCE_SUGGESTS_=false
-  # remove linux 
-  - TRAVIS_CXXFLAGS="-Wall -Wextra -pedantic -Werror"
-# before_install:
-#   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install llvm &&
-#     export PATH="/usr/local/opt/llvm/bin:$PATH" &&
-#     export LDFLAGS="-L/usr/local/opt/llvm/lib" &&
-#     export CFLAGS="-I/usr/local/opt/llvm/include"; fi

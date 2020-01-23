@@ -36,7 +36,13 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
     read_report <- data.table(file = character(), sample = character(), count = numeric(), 
                               length = numeric(), quality_length = numeric())
     for(file in files){
-      srqa <- qa(file, n = n)
+      srqa <- tryCatch(
+        {qa(file, n = n)},
+        error = function(e){
+          read_report <- rbind(read_report, 
+                               list(file, gsub('\\..*','',basename(file)), 0, 0, 0))
+          next
+        })
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
       lengths <- as.vector(by(df, df$Cycle, function(cycle){
@@ -63,7 +69,12 @@ read_quality_report <- function(path, q = 20, k = 3, n = 5e+06, cores = 1){
     on.exit(stopCluster(cl))
     read_report <- foreach(i = seq_along(files), .combine = 'rbind') %dopar% {
       file = files[i]
-      srqa <- ShortRead::qa(file, n = n)
+      srqa <- tryCatch(
+        {ShortRead::qa(file, n = n)},
+        error = function(e){
+          return(data.table(file = file, sample = gsub('\\..*','',basename(file)), count = 0, length = 0, quality_length = 0))
+          next
+        })
       df <- srqa[["perCycle"]]$quality
       read_counts <- sum(srqa[["readCounts"]]$read)
       lengths <- as.vector(by(df, df$Cycle, function(cycle){
